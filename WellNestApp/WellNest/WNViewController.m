@@ -41,6 +41,8 @@
     self.navigationItem.titleView = label;
     label.text = NSLocalizedString(@"Login", @"");
     [label sizeToFit];
+    
+    
    
 }
 

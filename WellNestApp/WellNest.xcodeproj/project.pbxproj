@@ -267,9 +267,9 @@
 				700C018018048D90000DB74E /* ISButton.m */,
 				700C018118048D90000DB74E /* NSString+FontAwesome.h */,
 				700C018218048D90000DB74E /* NSString+FontAwesome.m */,
-				700C018318048D90000DB74E /* resources */,
 				700C018518048D90000DB74E /* UIColor+BButton.h */,
 				700C018618048D90000DB74E /* UIColor+BButton.m */,
+				700C018318048D90000DB74E /* resources */,
 			);
 			path = "Custom Component";
 			sourceTree = "<group>";
@@ -551,7 +551,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "WellNest/WellNest-Prefix.pch";
 				INFOPLIST_FILE = "WellNest/WellNest-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -564,7 +564,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "WellNest/WellNest-Prefix.pch";
 				INFOPLIST_FILE = "WellNest/WellNest-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

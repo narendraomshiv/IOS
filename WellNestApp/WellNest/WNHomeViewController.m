@@ -33,15 +33,15 @@
     return self;
 }
 
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    [self.view addSubview:[self makeTabBarView:CGRectMake(0, 520, 320, 50)]];
     [self manageNAvigationBar];
     [self settingForCalendar];
-    [self.view addSubview:[self makeTabBarView:CGRectMake(0, 520, 320, 50)]];
-  
     
-}
+  }
 
 - (void)manageNAvigationBar{
     
@@ -178,7 +178,8 @@
 // Prompt the user for access to their Address Book data
 -(void)requestAddressBookAccess
 {
-    WNHomeViewController * __weak weakSelf = self;
+    WNHomeViewController *  weakSelf = self;
+    // WNHomeViewController * __weak weakSelf = self;
     
     ABAddressBookRequestAccessWithCompletion(self.addressBook, ^(bool granted, CFErrorRef error)
                                              {
@@ -212,9 +213,83 @@
     }
     
     
+    //Genarate random time for weekend only
+    
+    
+    NSDate *now = [NSDate date];
+    NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    
+    NSDateComponents *dateComponents = [calendar components:NSWeekdayCalendarUnit | NSHourCalendarUnit fromDate:now];
+    NSInteger weekday = [dateComponents weekday];
+    
+    NSDate *nextSunday = nil;
+    
+    if (weekday == 1 && [dateComponents hour] < 5) {
+        // The next day is today
+        nextSunday = now;
+    }
+    else  {
+        NSInteger daysTillNextSunday = 8 - weekday;
+        
+        int secondsInDay = 86400; // 24 * 60 * 60
+        nextSunday = [now dateByAddingTimeInterval:secondsInDay * daysTillNextSunday];
+    }
+    
+    
+    NSDate *nextSaturday = nil;
+    
+    if (weekday == 7 && [dateComponents hour] < 5) {
+        // The next day is today
+        nextSaturday = now;
+    }
+    else  {
+        
+        NSInteger daysTillNextSaturday = 8 - weekday-1;
+        
+        int secondsInDay = 86400; // 24 * 60 * 60
+        nextSaturday = [now dateByAddingTimeInterval:secondsInDay * daysTillNextSaturday];
+    }
+    
+   
+    
+   
+    int mints = arc4random_uniform(60) + 1;
+    int hrs = arc4random_uniform(24) + 1;
+    
+    NSLog(@"mints %d and hrs %d",mints,hrs);
+    
+    
+    NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier: NSGregorianCalendar];
+    NSDateComponents *components = [gregorian components: NSUIntegerMax fromDate: nextSaturday];
+    [components setHour: hrs];
+    [components setMinute: mints];
+    [components setSecond: 17];
+    
+    nextSaturday = [gregorian dateFromComponents: components];
+    
+    NSLog(@"nextSaturday %@",nextSaturday);
+    
+    mints = arc4random_uniform(60) + 1;
+    hrs = arc4random_uniform(24) + 1;
+    components = [gregorian components: NSUIntegerMax fromDate: nextSunday];
+    [components setHour: hrs];
+    [components setMinute: mints];
+    
+    nextSunday = [gregorian dateFromComponents: components];
+    NSLog(@"nextSunday %@",nextSunday);
+   
+    //Generate random time for weekend only
+    
     EKEvent *event = [EKEvent eventWithEventStore:self.eventStore];
-    event.title = @"";
-    event.allDay = YES;
+    NSArray *eventList = [NSArray arrayWithObjects:@"hang out",@"have fun",@"relax", nil];
+    event.startDate = nextSaturday;
+    event.endDate = nextSunday;
+    
+     
+    int randomID = arc4random() % 3+0;
+    
+    event.title = [eventList objectAtIndex:randomID];
+   
     EKEventEditViewController *addController = [[EKEventEditViewController alloc] initWithNibName:nil bundle:nil];
     addController.event = event;
     addController.eventStore = self.eventStore;
@@ -286,6 +361,7 @@
 {
 	ABPeoplePickerNavigationController *picker = [[ABPeoplePickerNavigationController alloc] init];
     picker.peoplePickerDelegate = self;
+    
 	// Display only a person's phone, email, and birthdate
 	NSArray *displayedItems = [NSArray arrayWithObjects:[NSNumber numberWithInt:kABPersonPhoneProperty],
                                [NSNumber numberWithInt:kABPersonEmailProperty],
@@ -302,14 +378,57 @@
 // Displays the information of a selected person
 - (BOOL)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker shouldContinueAfterSelectingPerson:(ABRecordRef)person
 {
+   
+    ABMultiValueRef phones =(__bridge ABMultiValueRef)((__bridge NSString*)ABRecordCopyValue(person, kABPersonPhoneProperty));
+    NSString* mobile=@"";
+    NSString* mobileLabel;
+    for(CFIndex i = 0; i < ABMultiValueGetCount(phones); i++) {
+        mobileLabel = (__bridge NSString*)ABMultiValueCopyLabelAtIndex(phones, i);
+        if([mobileLabel isEqualToString:(NSString *)kABPersonPhoneMobileLabel])
+        {
+            
+            mobile = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phones, i);
+        }
+        else if ([mobileLabel isEqualToString:(NSString*)kABPersonPhoneIPhoneLabel])
+        {
+            
+            mobile = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phones, i);
+            break ;
+        }
+    }
     
-	return NO;
+  
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"tel:%@",mobile]]];
+
+   	return NO;
 }
 
 // Does not allow users to perform default actions such as dialing a phone number, when they select a person property.
 - (BOOL)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker shouldContinueAfterSelectingPerson:(ABRecordRef)person
 								property:(ABPropertyID)property identifier:(ABMultiValueIdentifier)identifier
 {
+   /* NSLog(@"shouldContinueAfterSelectingPersonshouldContinueAfterSelectingPerson");
+    ABMultiValueRef phones =(__bridge ABMultiValueRef)((__bridge NSString*)ABRecordCopyValue(person, kABPersonPhoneProperty));
+    NSString* mobile=@"";
+    NSString* mobileLabel;
+    for(CFIndex i = 0; i < ABMultiValueGetCount(phones); i++) {
+        mobileLabel = (__bridge NSString*)ABMultiValueCopyLabelAtIndex(phones, i);
+        if([mobileLabel isEqualToString:(NSString *)kABPersonPhoneMobileLabel])
+        {
+            
+            mobile = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phones, i);
+        }
+        else if ([mobileLabel isEqualToString:(NSString*)kABPersonPhoneIPhoneLabel])
+        {
+            
+            mobile = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phones, i);
+            break ;
+        }
+    }
+    
+    NSLog(@"mobilemobile %@",mobile);
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"tel:%@",mobile]]];
+  */
 	return NO;
 }
 
@@ -324,7 +443,7 @@
 - (BOOL)personViewController:(ABPersonViewController *)personViewController shouldPerformDefaultActionForPerson:(ABRecordRef)person
 					property:(ABPropertyID)property identifier:(ABMultiValueIdentifier)identifierForValue
 {
-	return NO;
+	return YES;
 }
 
 
